@@ -62,10 +62,6 @@ func DeleteTodo(c echo.Context) error {
 	}
 
 	todo := Todo{ID: objectId}
-	if err := c.Bind(&todo); err != nil {
-		return err
-	}
-
 	isDeleted, err := todo.Delete()
 	if err != nil {
 		return err

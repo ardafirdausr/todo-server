@@ -9,9 +9,9 @@ import (
 )
 
 type Todo struct {
-	ID        primitive.ObjectID `json:"id"`
-	Task      string             `json:"task"`
-	Completed bool               `json:"completed"`
+	ID        primitive.ObjectID `json:"id" bson:"_id"`
+	Task      string             `json:"task" bson:"task"`
+	Completed bool               `json:"completed" bson:"completed"`
 }
 
 func (t *Todo) Save() (*Todo, error) {
