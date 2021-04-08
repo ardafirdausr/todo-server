@@ -1,20 +1,20 @@
 package main
 
 import (
+	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-var lastId = 3
-var DB = []Todo{
-	{ID: 1, Task: "Buy Eggs"},
-	{ID: 2, Task: "Buy Milk"},
-}
-
 func GetAllTodos(c echo.Context) error {
-	todos := DB
+	todos, err := FindAllTodos()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
 	return c.JSON(http.StatusOK, todos)
 }
 
@@ -24,51 +24,57 @@ func CreateTodo(c echo.Context) error {
 		return err
 	}
 
-	todo.ID = lastId
-	lastId++
-
-	DB = append(DB, todo)
-	return c.JSON(http.StatusCreated, todo)
-}
-
-func UpdateTodo(c echo.Context) error {
-	id, _ := strconv.Atoi(c.Param("id"))
-
-	newTodo := Todo{}
-	newTodo.ID = id
-	if err := c.Bind(&newTodo); err != nil {
+	newTodo, err := todo.Save()
+	if err != nil {
 		return err
 	}
 
-	var updateIndex = -1
-	for idx, todo := range DB {
-		if todo.ID == newTodo.ID {
-			updateIndex = idx
-		}
+	return c.JSON(http.StatusCreated, newTodo)
+}
+
+func UpdateTodo(c echo.Context) error {
+	id := c.Param("id")
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		payload := echo.Map{"message": "Invalid ID"}
+		return c.JSON(http.StatusOK, payload)
 	}
 
-	if updateIndex == -1 {
-		return c.JSON(http.StatusNotFound, nil)
+	todo := Todo{ID: objectId}
+	if err := c.Bind(&todo); err != nil {
+		return err
 	}
 
-	DB[updateIndex] = newTodo
-	return c.JSON(http.StatusOK, newTodo)
+	updatedTodo, err := todo.Update()
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, updatedTodo)
 }
 
 func DeleteTodo(c echo.Context) error {
-	id, _ := strconv.Atoi(c.Param("id"))
-
-	var deleteIndex = -1
-	for index, todo := range DB {
-		if todo.ID == id {
-			deleteIndex = index
-		}
+	id := c.Param("id")
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		payload := echo.Map{"message": "Invalid ID"}
+		return c.JSON(http.StatusOK, payload)
 	}
 
-	if deleteIndex == -1 {
-		return c.JSON(http.StatusNotFound, nil)
+	todo := Todo{ID: objectId}
+	if err := c.Bind(&todo); err != nil {
+		return err
 	}
 
-	DB = append(DB[:deleteIndex], DB[deleteIndex+1:]...)
+	isDeleted, err := todo.Delete()
+	if err != nil {
+		return err
+	}
+
+	if !isDeleted {
+		payload := echo.Map{"message": "Failed to delete todo"}
+		return c.JSON(http.StatusInternalServerError, payload)
+	}
+
 	return c.JSON(http.StatusNoContent, nil)
 }
