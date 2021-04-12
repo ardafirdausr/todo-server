@@ -14,5 +14,6 @@ require (
 	github.com/pelletier/go-toml v1.9.0 // indirect
 	go.mongodb.org/mongo-driver v1.5.1 // indirect
 	golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57 // indirect
+	google.golang.org/api v0.44.0
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )

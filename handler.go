@@ -9,7 +9,8 @@ import (
 )
 
 func GetAllTodos(c echo.Context) error {
-	todos, err := FindAllTodos()
+	userId := c.Request().Context().Value(userIdKey).(primitive.ObjectID)
+	todos, err := GetAllUserTodos(userId)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -19,7 +20,9 @@ func GetAllTodos(c echo.Context) error {
 }
 
 func CreateTodo(c echo.Context) error {
-	todo := Todo{}
+	userId := c.Request().Context().Value(userIdKey).(primitive.ObjectID)
+
+	todo := Todo{UserID: userId}
 	if err := c.Bind(&todo); err != nil {
 		return err
 	}

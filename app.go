@@ -33,6 +33,7 @@ func main() {
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
+	e.Use(Auth)
 
 	e.GET("/todos", GetAllTodos)
 	e.POST("/todos", CreateTodo)
