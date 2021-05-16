@@ -24,7 +24,6 @@ func (ctrl TodoController) GetAllTodos(c echo.Context) error {
 	userId := claims.ID
 	todos, err := ctrl.services.TodoService.GetAllUserTodos(userId)
 	if err != nil {
-		c.Logger().Debug(err)
 		return err
 	}
 

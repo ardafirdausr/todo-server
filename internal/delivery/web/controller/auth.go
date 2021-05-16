@@ -31,7 +31,6 @@ func (ctrl AuthController) Login(c echo.Context) error {
 
 	userEmail := SSOTokenPayload.Claims["email"].(string)
 	user, err := ctrl.services.AuthService.GetUserByEmail(userEmail)
-	c.Logger().Debug(userEmail, user)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
