@@ -11,10 +11,10 @@ import (
 )
 
 type TodoController struct {
-	services *app.Services
+	services *app.Usecases
 }
 
-func NewTodoController(services *app.Services) *TodoController {
+func NewTodoController(services *app.Usecases) *TodoController {
 	return &TodoController{services: services}
 }
 
@@ -22,7 +22,7 @@ func (ctrl TodoController) GetAllTodos(c echo.Context) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*entity.JWTPayload)
 	userId := claims.ID
-	todos, err := ctrl.services.TodoService.GetAllUserTodos(userId)
+	todos, err := ctrl.services.TodoUsecase.GetAllUserTodos(userId)
 	if err != nil {
 		return err
 	}
@@ -40,7 +40,7 @@ func (ctrl TodoController) CreateTodo(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	newTodo, err := ctrl.services.TodoService.CreateTodo(todo)
+	newTodo, err := ctrl.services.TodoUsecase.CreateTodo(todo)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -61,7 +61,7 @@ func (ctrl TodoController) UpdateTodo(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	updatedTodo, err := ctrl.services.TodoService.UpdateTodo(objectId, todo)
+	updatedTodo, err := ctrl.services.TodoUsecase.UpdateTodo(objectId, todo)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -77,7 +77,7 @@ func (ctrl TodoController) DeleteTodo(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, payload)
 	}
 
-	isDeleted, err := ctrl.services.TodoService.DeleteTodo(objectId)
+	isDeleted, err := ctrl.services.TodoUsecase.DeleteTodo(objectId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

@@ -8,7 +8,9 @@ import (
 
 func Recover() echo.MiddlewareFunc {
 	config := middleware.RecoverConfig{
-		LogLevel: log.ERROR,
+		DisableStackAll:   true,
+		DisablePrintStack: false,
+		LogLevel:          log.ERROR,
 	}
 	return middleware.RecoverWithConfig(config)
 }

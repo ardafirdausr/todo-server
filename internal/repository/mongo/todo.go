@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"github.com/ardafirdausr/todo-server/internal/entity"
@@ -18,7 +19,7 @@ func NewTodoRepository(DB *mongo.Database) *TodoRepository {
 	return &TodoRepository{DB: DB}
 }
 
-func (repo TodoRepository) GetTodosByUserID(ID primitive.ObjectID) ([]entity.Todo, error) {
+func (repo TodoRepository) GetTodosByUserID(ID primitive.ObjectID) ([]*entity.Todo, error) {
 	ctx := context.TODO()
 	csr, err := repo.DB.Collection("todos").Find(ctx, bson.M{"userId": ID})
 	if err != nil {
@@ -26,10 +27,10 @@ func (repo TodoRepository) GetTodosByUserID(ID primitive.ObjectID) ([]entity.Tod
 	}
 	defer csr.Close(ctx)
 
-	todos := make([]entity.Todo, 0)
+	todos := make([]*entity.Todo, 0)
 	for csr.Next(ctx) {
-		var todo entity.Todo
-		err := csr.Decode(&todo)
+		var todo *entity.Todo
+		err := csr.Decode(todo)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
@@ -59,9 +60,13 @@ func (repo TodoRepository) Create(t entity.CreateTodoParam) (*entity.Todo, error
 
 func (repo TodoRepository) UpdateById(ID primitive.ObjectID, t entity.UpdateTodoParam) (*entity.Todo, error) {
 	ctx := context.TODO()
-	_, err := repo.DB.Collection("todos").UpdateByID(ctx, ID, bson.M{"$set": t})
+	updatedResult, err := repo.DB.Collection("todos").UpdateByID(ctx, ID, bson.M{"$set": t})
 	if err != nil {
 		return nil, err
+	}
+
+	if updatedResult.ModifiedCount < 1 {
+		return nil, errors.New("failed to update data")
 	}
 
 	todo := &entity.Todo{

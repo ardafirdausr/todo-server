@@ -20,6 +20,14 @@ func NewUserRepository(DB *mongo.Database) *UserRepository {
 func (repo UserRepository) GetUserByEmail(email string) (*entity.User, error) {
 	var user entity.User
 	res := repo.DB.Collection("users").FindOne(context.TODO(), bson.M{"email": email})
+	if res.Err() == mongo.ErrNoDocuments {
+		err := entity.ErrNotFound{
+			Message: "User not found",
+			Err:     res.Err().Error(),
+		}
+		return nil, err
+	}
+
 	if err := res.Decode(&user); err != nil {
 		return nil, err
 	}

@@ -5,11 +5,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type JWTPayload struct {
+type TokenPayload struct {
 	ID       primitive.ObjectID `json:"id"`
 	Name     string             `json:"name"`
 	Email    string             `json:"email"`
 	Imageurl string             `json:"imageUrl"`
+}
+type JWTPayload struct {
+	TokenPayload
 	jwt.StandardClaims
 }
 

@@ -18,6 +18,7 @@ require (
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/pelletier/go-toml v1.9.0 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
+	github.com/vektra/mockery/v2 v2.7.5 // indirect
 	go.mongodb.org/mongo-driver v1.5.1
 	golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57 // indirect
 	google.golang.org/api v0.44.0
