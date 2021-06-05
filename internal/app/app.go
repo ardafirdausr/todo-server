@@ -14,6 +14,8 @@ type TodoApp struct {
 func New() (*TodoApp, error) {
 	app := new(TodoApp)
 
+	log.SetFlags(log.Ldate | log.Ltime | log.Llongfile)
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Failed to load .env  file \n%v", err)

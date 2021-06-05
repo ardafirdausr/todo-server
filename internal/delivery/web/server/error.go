@@ -21,14 +21,14 @@ func (che CustomHTTPErrorHandler) Handler(err error, c echo.Context) {
 		}
 	}
 
-	if ev, ok := err.(entity.ErrValidation); ok {
+	if ev, ok := err.(*entity.ErrValidation); ok {
 		he.Code = http.StatusBadRequest
 		if ev.Message == "" {
 			he.Message = http.StatusText(http.StatusBadRequest)
 		} else {
 			he.Message = ev.Message
 		}
-	} else if ent, ok := err.(entity.ErrNotFound); ok {
+	} else if ent, ok := err.(*entity.ErrNotFound); ok {
 		he.Code = http.StatusNotFound
 		if ev.Message == "" {
 			he.Message = http.StatusText(http.StatusNotFound)

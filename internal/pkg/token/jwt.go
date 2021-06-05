@@ -17,9 +17,7 @@ func NewJWTTokenizer(secretKey string) JWTTokenizer {
 
 func (JWTT JWTTokenizer) Generate(payload entity.TokenPayload) (string, error) {
 	jwtPayload := entity.JWTPayload{}
-	jwtPayload.Name = payload.Name
-	jwtPayload.Email = payload.Email
-	jwtPayload.Imageurl = payload.Imageurl
+	jwtPayload.TokenPayload = payload
 	jwtPayload.ExpiresAt = time.Now().Add(time.Hour * 24).Unix()
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtPayload)

@@ -23,19 +23,20 @@ func (repo TodoRepository) GetTodosByUserID(ID primitive.ObjectID) ([]*entity.To
 	ctx := context.TODO()
 	csr, err := repo.DB.Collection("todos").Find(ctx, bson.M{"userId": ID})
 	if err != nil {
+		log.Println(err.Error())
 		return nil, err
 	}
 	defer csr.Close(ctx)
 
 	todos := make([]*entity.Todo, 0)
 	for csr.Next(ctx) {
-		var todo *entity.Todo
-		err := csr.Decode(todo)
-		if err != nil {
-			log.Fatal(err.Error())
+		var todo entity.Todo
+		if err := csr.Decode(&todo); err == nil {
+			todos = append(todos, &todo)
+			continue
 		}
 
-		todos = append(todos, todo)
+		log.Println(err.Error())
 	}
 
 	return todos, nil
@@ -45,7 +46,7 @@ func (repo TodoRepository) Create(t entity.CreateTodoParam) (*entity.Todo, error
 	ctx := context.TODO()
 	r, err := repo.DB.Collection("todos").InsertOne(ctx, t)
 	if err != nil {
-		log.Println(err)
+		log.Println(err.Error())
 		return nil, err
 	}
 
@@ -62,6 +63,7 @@ func (repo TodoRepository) UpdateById(ID primitive.ObjectID, t entity.UpdateTodo
 	ctx := context.TODO()
 	updatedResult, err := repo.DB.Collection("todos").UpdateByID(ctx, ID, bson.M{"$set": t})
 	if err != nil {
+		log.Println(err.Error())
 		return nil, err
 	}
 
@@ -81,6 +83,7 @@ func (repo TodoRepository) DeleteById(ID primitive.ObjectID) (bool, error) {
 	ctx := context.TODO()
 	r, err := repo.DB.Collection("todos").DeleteOne(ctx, bson.M{"_id": ID})
 	if err != nil {
+		log.Println(err.Error())
 		return false, err
 	}
 

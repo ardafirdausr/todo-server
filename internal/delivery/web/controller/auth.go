@@ -12,11 +12,11 @@ import (
 )
 
 type AuthController struct {
-	services *app.Usecases
+	usecases *app.Usecases
 }
 
-func NewAuthController(services *app.Usecases) *AuthController {
-	return &AuthController{services: services}
+func NewAuthController(usecases *app.Usecases) *AuthController {
+	return &AuthController{usecases: usecases}
 }
 
 func (ctrl AuthController) Login(c echo.Context) error {
@@ -27,14 +27,14 @@ func (ctrl AuthController) Login(c echo.Context) error {
 
 	googleSSOClientID := os.Getenv("GOOGLE_OAUTH_CLIENT_ID")
 	googleAuthenticator := auth.NewGoogleSSOAuthenticator(googleSSOClientID)
-	user, err := ctrl.services.AuthUsecase.SSO(googleAuth.TokenID, googleAuthenticator)
+	user, err := ctrl.usecases.AuthUsecase.SSO(googleAuth.TokenID, googleAuthenticator)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	JWTSecretKey := os.Getenv("JWT_SECRET_KEY")
 	JWTToknizer := token.NewJWTTokenizer(JWTSecretKey)
-	JWTToken, err := ctrl.services.AuthUsecase.GenerateAuthToken(*user, JWTToknizer)
+	JWTToken, err := ctrl.usecases.AuthUsecase.GenerateAuthToken(*user, JWTToknizer)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

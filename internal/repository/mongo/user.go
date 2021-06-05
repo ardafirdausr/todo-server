@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"log"
 
 	"github.com/ardafirdausr/todo-server/internal/entity"
 	"go.mongodb.org/mongo-driver/bson"
@@ -21,14 +22,13 @@ func (repo UserRepository) GetUserByEmail(email string) (*entity.User, error) {
 	var user entity.User
 	res := repo.DB.Collection("users").FindOne(context.TODO(), bson.M{"email": email})
 	if res.Err() == mongo.ErrNoDocuments {
-		err := entity.ErrNotFound{
-			Message: "User not found",
-			Err:     res.Err().Error(),
-		}
+		log.Println(res.Err())
+		err := entity.NewErrNotFound("User not found", res.Err())
 		return nil, err
 	}
 
 	if err := res.Decode(&user); err != nil {
+		log.Println(err.Error())
 		return nil, err
 	}
 
@@ -38,6 +38,7 @@ func (repo UserRepository) GetUserByEmail(email string) (*entity.User, error) {
 func (repo UserRepository) Create(t entity.CreateUserParam) (*entity.User, error) {
 	r, err := repo.DB.Collection("users").InsertOne(context.TODO(), t)
 	if err != nil {
+		log.Println(err.Error())
 		return nil, err
 	}
 

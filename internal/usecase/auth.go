@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"log"
+
 	"github.com/ardafirdausr/todo-server/internal"
 	"github.com/ardafirdausr/todo-server/internal/entity"
 )
@@ -16,15 +18,12 @@ func NewAuthUsecase(userRepository internal.UserRepository) *AuthUsecase {
 func (service AuthUsecase) SSO(token string, authenticator internal.SSOAuthenticator) (*entity.User, error) {
 	reqUser, err := authenticator.Authenticate(token)
 	if err != nil {
+		log.Println(err.Error())
 		return nil, err
 	}
 
 	user, err := service.userRepository.GetUserByEmail(reqUser.Email)
-	if err != nil {
-		return nil, err
-	}
-
-	if user == nil {
+	if _, ok := err.(*entity.ErrNotFound); ok {
 		param := entity.CreateUserParam{
 			Email:    reqUser.Email,
 			Name:     reqUser.Name,
@@ -32,8 +31,14 @@ func (service AuthUsecase) SSO(token string, authenticator internal.SSOAuthentic
 		}
 		user, err = service.userRepository.Create(param)
 		if err != nil {
+			log.Println(err.Error())
 			return nil, err
 		}
+	}
+
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
 	}
 
 	return user, nil
@@ -47,6 +52,7 @@ func (service AuthUsecase) GenerateAuthToken(user entity.User, tokenizer interna
 	tokenPayload.Imageurl = user.ImageUrl
 	token, err := tokenizer.Generate(tokenPayload)
 	if err != nil {
+		log.Println(err.Error())
 		return "", err
 	}
 
