@@ -1,6 +1,7 @@
 package token
 
 import (
+	"log"
 	"time"
 
 	"github.com/ardafirdausr/todo-server/internal/entity"
@@ -23,6 +24,7 @@ func (JWTT JWTTokenizer) Generate(payload entity.TokenPayload) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtPayload)
 	jwtToken, err := token.SignedString([]byte(JWTT.secretKey))
 	if err != nil {
+		log.Println(err.Error())
 		return "", err
 	}
 

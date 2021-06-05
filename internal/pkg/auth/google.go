@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"log"
 	"net/http"
 
 	"github.com/ardafirdausr/todo-server/internal/entity"
@@ -20,11 +21,13 @@ func (auth GoogleSSOAuthenticator) getTokenPayload(token string) (*idtoken.Paylo
 	clientOption := idtoken.WithHTTPClient(&http.Client{})
 	tokenValidator, err := idtoken.NewValidator(context.Background(), clientOption)
 	if err != nil {
+		log.Println(err.Error())
 		return nil, err
 	}
 
 	payload, err := tokenValidator.Validate(context.Background(), token, auth.clientID)
 	if err != nil {
+		log.Println(err.Error())
 		return nil, err
 	}
 
@@ -34,6 +37,7 @@ func (auth GoogleSSOAuthenticator) getTokenPayload(token string) (*idtoken.Paylo
 func (auth GoogleSSOAuthenticator) Authenticate(token string) (*entity.User, error) {
 	payload, err := auth.getTokenPayload(token)
 	if err != nil {
+		log.Println(err.Error())
 		return nil, err
 	}
 
