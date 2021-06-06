@@ -59,24 +59,36 @@ func (repo TodoRepository) Create(t entity.CreateTodoParam) (*entity.Todo, error
 	return todo, nil
 }
 
-func (repo TodoRepository) UpdateById(ID primitive.ObjectID, t entity.UpdateTodoParam) (*entity.Todo, error) {
-	ctx := context.TODO()
-	updatedResult, err := repo.DB.Collection("todos").UpdateByID(ctx, ID, bson.M{"$set": t})
-	if err != nil {
+func (repo TodoRepository) GetTodoByID(ID primitive.ObjectID) (*entity.Todo, error) {
+	var todo entity.Todo
+	res := repo.DB.Collection("todos").FindOne(context.TODO(), bson.M{"_id": ID})
+	if res.Err() == mongo.ErrNoDocuments {
+		log.Println(res.Err())
+		err := entity.NewErrNotFound("Todo not found", res.Err())
+		return nil, err
+	}
+
+	if err := res.Decode(&todo); err != nil {
 		log.Println(err.Error())
 		return nil, err
 	}
 
-	if updatedResult.ModifiedCount < 1 {
-		return nil, errors.New("failed to update data")
+	return &todo, nil
+}
+
+func (repo TodoRepository) UpdateById(ID primitive.ObjectID, t entity.UpdateTodoParam) (bool, error) {
+	ctx := context.TODO()
+	ures, err := repo.DB.Collection("todos").UpdateByID(ctx, ID, bson.M{"$set": t})
+	if err != nil {
+		log.Println(err.Error())
+		return false, err
 	}
 
-	todo := &entity.Todo{
-		ID:        ID,
-		Task:      t.Task,
-		Completed: t.Completed,
+	if ures.MatchedCount < 1 {
+		return false, errors.New("failed to update data")
 	}
-	return todo, nil
+
+	return true, nil
 }
 
 func (repo TodoRepository) DeleteById(ID primitive.ObjectID) (bool, error) {

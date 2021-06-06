@@ -61,7 +61,7 @@ func TestCreateTodo_Success(t *testing.T) {
 
 func TestUpdateTodo_Success(t *testing.T) {
 	dummyUserID := primitive.NewObjectID()
-	willUpdateTodo := entity.Todo{
+	todo := entity.Todo{
 		ID:        primitive.NewObjectID(),
 		Task:      "Task 1",
 		Completed: false,
@@ -71,19 +71,13 @@ func TestUpdateTodo_Success(t *testing.T) {
 		Task:      "Finished Task",
 		Completed: true,
 	}
-	expectedTodo := entity.Todo{
-		ID:        willUpdateTodo.ID,
-		Task:      "Finished Task",
-		Completed: true,
-		UserID:    dummyUserID,
-	}
 
 	mockTodoRepository := new(mocks.TodoRepository)
-	mockTodoRepository.On("UpdateById", willUpdateTodo.ID, newTodoData).Return(&expectedTodo, nil)
+	mockTodoRepository.On("UpdateById", todo.ID, newTodoData).Return(true, nil)
 
 	todoUsecase := NewTodoUsecase(mockTodoRepository)
-	todo, err := todoUsecase.UpdateTodo(willUpdateTodo.ID, newTodoData)
-	assert.ObjectsAreEqualValues(expectedTodo, todo)
+	isUpdated, err := todoUsecase.UpdateTodo(todo.ID, newTodoData)
+	assert.True(t, isUpdated)
 	assert.Nil(t, err)
 }
 

@@ -22,21 +22,24 @@ func NewAuthController(usecases *app.Usecases) *AuthController {
 func (ctrl AuthController) Login(c echo.Context) error {
 	googleAuth := entity.GoogleAuth{}
 	if err := c.Bind(&googleAuth); err != nil {
-		return err
+		c.Logger().Error(err.Error())
+		return echo.ErrInternalServerError
 	}
 
 	googleSSOClientID := os.Getenv("GOOGLE_OAUTH_CLIENT_ID")
 	googleAuthenticator := auth.NewGoogleSSOAuthenticator(googleSSOClientID)
 	user, err := ctrl.usecases.AuthUsecase.SSO(googleAuth.TokenID, googleAuthenticator)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		c.Logger().Error(err.Error())
+		return err
 	}
 
 	JWTSecretKey := os.Getenv("JWT_SECRET_KEY")
 	JWTToknizer := token.NewJWTTokenizer(JWTSecretKey)
 	JWTToken, err := ctrl.usecases.AuthUsecase.GenerateAuthToken(*user, JWTToknizer)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		c.Logger().Error(err.Error())
+		return err
 	}
 
 	response := echo.Map{

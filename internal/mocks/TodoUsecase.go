@@ -83,16 +83,14 @@ func (_m *TodoUsecase) GetAllUserTodos(_a0 primitive.ObjectID) ([]*entity.Todo, 
 }
 
 // UpdateTodo provides a mock function with given fields: _a0, _a1
-func (_m *TodoUsecase) UpdateTodo(_a0 primitive.ObjectID, _a1 entity.UpdateTodoParam) (*entity.Todo, error) {
+func (_m *TodoUsecase) UpdateTodo(_a0 primitive.ObjectID, _a1 entity.UpdateTodoParam) (bool, error) {
 	ret := _m.Called(_a0, _a1)
 
-	var r0 *entity.Todo
-	if rf, ok := ret.Get(0).(func(primitive.ObjectID, entity.UpdateTodoParam) *entity.Todo); ok {
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID, entity.UpdateTodoParam) bool); ok {
 		r0 = rf(_a0, _a1)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*entity.Todo)
-		}
+		r0 = ret.Get(0).(bool)
 	}
 
 	var r1 error

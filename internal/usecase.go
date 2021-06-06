@@ -12,7 +12,8 @@ type AuthUsecase interface {
 
 type TodoUsecase interface {
 	GetAllUserTodos(primitive.ObjectID) ([]*entity.Todo, error)
+	GetTodo(primitive.ObjectID) (*entity.Todo, error)
 	CreateTodo(entity.CreateTodoParam) (*entity.Todo, error)
-	UpdateTodo(primitive.ObjectID, entity.UpdateTodoParam) (*entity.Todo, error)
+	UpdateTodo(primitive.ObjectID, entity.UpdateTodoParam) (bool, error)
 	DeleteTodo(primitive.ObjectID) (bool, error)
 }

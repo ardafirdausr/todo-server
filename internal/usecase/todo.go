@@ -25,6 +25,15 @@ func (service TodoUsecase) GetAllUserTodos(ID primitive.ObjectID) ([]*entity.Tod
 	return todos, err
 }
 
+func (service TodoUsecase) GetTodo(ID primitive.ObjectID) (*entity.Todo, error) {
+	todo, err := service.todoRepository.GetTodoByID(ID)
+	if err != nil {
+		log.Println(err.Error())
+	}
+
+	return todo, err
+}
+
 func (service TodoUsecase) CreateTodo(t entity.CreateTodoParam) (*entity.Todo, error) {
 	todo, err := service.todoRepository.Create(t)
 	if err != nil {
@@ -33,12 +42,13 @@ func (service TodoUsecase) CreateTodo(t entity.CreateTodoParam) (*entity.Todo, e
 	return todo, err
 }
 
-func (service TodoUsecase) UpdateTodo(ID primitive.ObjectID, t entity.UpdateTodoParam) (*entity.Todo, error) {
-	todo, err := service.todoRepository.UpdateById(ID, t)
+func (service TodoUsecase) UpdateTodo(ID primitive.ObjectID, t entity.UpdateTodoParam) (bool, error) {
+	updatedTodo, err := service.todoRepository.UpdateById(ID, t)
 	if err != nil {
 		log.Println(err.Error())
 	}
-	return todo, err
+
+	return updatedTodo, err
 }
 
 func (service TodoUsecase) DeleteTodo(ID primitive.ObjectID) (bool, error) {

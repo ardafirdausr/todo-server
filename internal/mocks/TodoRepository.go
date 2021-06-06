@@ -59,6 +59,29 @@ func (_m *TodoRepository) DeleteById(_a0 primitive.ObjectID) (bool, error) {
 	return r0, r1
 }
 
+// GetTodoByID provides a mock function with given fields: _a0
+func (_m *TodoRepository) GetTodoByID(_a0 primitive.ObjectID) (*entity.Todo, error) {
+	ret := _m.Called(_a0)
+
+	var r0 *entity.Todo
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID) *entity.Todo); ok {
+		r0 = rf(_a0)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*entity.Todo)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(primitive.ObjectID) error); ok {
+		r1 = rf(_a0)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetTodosByUserID provides a mock function with given fields: _a0
 func (_m *TodoRepository) GetTodosByUserID(_a0 primitive.ObjectID) ([]*entity.Todo, error) {
 	ret := _m.Called(_a0)
@@ -83,16 +106,14 @@ func (_m *TodoRepository) GetTodosByUserID(_a0 primitive.ObjectID) ([]*entity.To
 }
 
 // UpdateById provides a mock function with given fields: _a0, _a1
-func (_m *TodoRepository) UpdateById(_a0 primitive.ObjectID, _a1 entity.UpdateTodoParam) (*entity.Todo, error) {
+func (_m *TodoRepository) UpdateById(_a0 primitive.ObjectID, _a1 entity.UpdateTodoParam) (bool, error) {
 	ret := _m.Called(_a0, _a1)
 
-	var r0 *entity.Todo
-	if rf, ok := ret.Get(0).(func(primitive.ObjectID, entity.UpdateTodoParam) *entity.Todo); ok {
+	var r0 bool
+	if rf, ok := ret.Get(0).(func(primitive.ObjectID, entity.UpdateTodoParam) bool); ok {
 		r0 = rf(_a0, _a1)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*entity.Todo)
-		}
+		r0 = ret.Get(0).(bool)
 	}
 
 	var r1 error

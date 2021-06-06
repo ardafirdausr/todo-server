@@ -30,7 +30,7 @@ func (che CustomHTTPErrorHandler) Handler(err error, c echo.Context) {
 		}
 	} else if ent, ok := err.(*entity.ErrNotFound); ok {
 		he.Code = http.StatusNotFound
-		if ev.Message == "" {
+		if ent.Message == "" {
 			he.Message = http.StatusText(http.StatusNotFound)
 		} else {
 			he.Message = ent.Message
