@@ -8,11 +8,13 @@ import (
 
 type TodoApp struct {
 	Repositories *Repositories
-	Services     *Services
+	Usecases     *Usecases
 }
 
 func New() (*TodoApp, error) {
 	app := new(TodoApp)
+
+	log.SetFlags(log.Ldate | log.Ltime | log.Llongfile)
 
 	err := godotenv.Load()
 	if err != nil {
@@ -24,6 +26,6 @@ func New() (*TodoApp, error) {
 		log.Fatalf("Failed to initiate repositories\n%v", err)
 	}
 
-	app.Services = NewServices(app.Repositories)
+	app.Usecases = NewUsecases(app.Repositories)
 	return app, nil
 }

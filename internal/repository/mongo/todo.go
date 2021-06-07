@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"github.com/ardafirdausr/todo-server/internal/entity"
@@ -18,23 +19,24 @@ func NewTodoRepository(DB *mongo.Database) *TodoRepository {
 	return &TodoRepository{DB: DB}
 }
 
-func (repo TodoRepository) GetTodosByUserID(ID primitive.ObjectID) ([]entity.Todo, error) {
+func (repo TodoRepository) GetTodosByUserID(ID primitive.ObjectID) ([]*entity.Todo, error) {
 	ctx := context.TODO()
 	csr, err := repo.DB.Collection("todos").Find(ctx, bson.M{"userId": ID})
 	if err != nil {
+		log.Println(err.Error())
 		return nil, err
 	}
 	defer csr.Close(ctx)
 
-	todos := make([]entity.Todo, 0)
+	todos := make([]*entity.Todo, 0)
 	for csr.Next(ctx) {
 		var todo entity.Todo
-		err := csr.Decode(&todo)
-		if err != nil {
-			log.Fatal(err.Error())
+		if err := csr.Decode(&todo); err == nil {
+			todos = append(todos, &todo)
+			continue
 		}
 
-		todos = append(todos, todo)
+		log.Println(err.Error())
 	}
 
 	return todos, nil
@@ -44,7 +46,7 @@ func (repo TodoRepository) Create(t entity.CreateTodoParam) (*entity.Todo, error
 	ctx := context.TODO()
 	r, err := repo.DB.Collection("todos").InsertOne(ctx, t)
 	if err != nil {
-		log.Println(err)
+		log.Println(err.Error())
 		return nil, err
 	}
 
@@ -57,25 +59,43 @@ func (repo TodoRepository) Create(t entity.CreateTodoParam) (*entity.Todo, error
 	return todo, nil
 }
 
-func (repo TodoRepository) UpdateById(ID primitive.ObjectID, t entity.UpdateTodoParam) (*entity.Todo, error) {
-	ctx := context.TODO()
-	_, err := repo.DB.Collection("todos").UpdateByID(ctx, ID, bson.M{"$set": t})
-	if err != nil {
+func (repo TodoRepository) GetTodoByID(ID primitive.ObjectID) (*entity.Todo, error) {
+	var todo entity.Todo
+	res := repo.DB.Collection("todos").FindOne(context.TODO(), bson.M{"_id": ID})
+	if res.Err() == mongo.ErrNoDocuments {
+		log.Println(res.Err())
+		err := entity.NewErrNotFound("Todo not found", res.Err())
 		return nil, err
 	}
 
-	todo := &entity.Todo{
-		ID:        ID,
-		Task:      t.Task,
-		Completed: t.Completed,
+	if err := res.Decode(&todo); err != nil {
+		log.Println(err.Error())
+		return nil, err
 	}
-	return todo, nil
+
+	return &todo, nil
+}
+
+func (repo TodoRepository) UpdateById(ID primitive.ObjectID, t entity.UpdateTodoParam) (bool, error) {
+	ctx := context.TODO()
+	ures, err := repo.DB.Collection("todos").UpdateByID(ctx, ID, bson.M{"$set": t})
+	if err != nil {
+		log.Println(err.Error())
+		return false, err
+	}
+
+	if ures.MatchedCount < 1 {
+		return false, errors.New("failed to update data")
+	}
+
+	return true, nil
 }
 
 func (repo TodoRepository) DeleteById(ID primitive.ObjectID) (bool, error) {
 	ctx := context.TODO()
 	r, err := repo.DB.Collection("todos").DeleteOne(ctx, bson.M{"_id": ID})
 	if err != nil {
+		log.Println(err.Error())
 		return false, err
 	}
 

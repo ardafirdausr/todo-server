@@ -11,10 +11,10 @@ import (
 )
 
 type TodoController struct {
-	services *app.Services
+	services *app.Usecases
 }
 
-func NewTodoController(services *app.Services) *TodoController {
+func NewTodoController(services *app.Usecases) *TodoController {
 	return &TodoController{services: services}
 }
 
@@ -22,12 +22,17 @@ func (ctrl TodoController) GetAllTodos(c echo.Context) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*entity.JWTPayload)
 	userId := claims.ID
-	todos, err := ctrl.services.TodoService.GetAllUserTodos(userId)
+	todos, err := ctrl.services.TodoUsecase.GetAllUserTodos(userId)
 	if err != nil {
+		c.Logger().Error(err.Error())
 		return err
 	}
 
-	return c.JSON(http.StatusOK, todos)
+	payload := echo.Map{
+		"message": http.StatusText(http.StatusOK),
+		"data":    todos,
+	}
+	return c.JSON(http.StatusOK, payload)
 }
 
 func (ctrl TodoController) CreateTodo(c echo.Context) error {
@@ -35,55 +40,97 @@ func (ctrl TodoController) CreateTodo(c echo.Context) error {
 	claims := user.Claims.(*entity.JWTPayload)
 	userId := claims.ID
 
-	todo := entity.CreateTodoParam{UserID: userId}
+	todo := entity.CreateTodoParam{
+		UserID:    userId,
+		Completed: false,
+	}
 	if err := c.Bind(&todo); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		c.Logger().Error(err.Error())
+		return echo.ErrInternalServerError
 	}
 
-	newTodo, err := ctrl.services.TodoService.CreateTodo(todo)
+	if err := c.Validate(&todo); err != nil {
+		c.Logger().Error(err.Error())
+		return err
+	}
+
+	newTodo, err := ctrl.services.TodoUsecase.CreateTodo(todo)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		c.Logger().Error(err.Error())
+		return err
 	}
 
-	return c.JSON(http.StatusCreated, newTodo)
+	payload := echo.Map{
+		"message": http.StatusText(http.StatusOK),
+		"data":    newTodo,
+	}
+	return c.JSON(http.StatusCreated, payload)
 }
 
 func (ctrl TodoController) UpdateTodo(c echo.Context) error {
 	id := c.Param("id")
 	objectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
+		c.Logger().Error(err.Error())
 		payload := echo.Map{"message": "Invalid ID"}
 		return c.JSON(http.StatusBadRequest, payload)
 	}
 
-	todo := entity.UpdateTodoParam{}
-	if err := c.Bind(&todo); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
-
-	updatedTodo, err := ctrl.services.TodoService.UpdateTodo(objectId, todo)
+	todo, err := ctrl.services.TodoUsecase.GetTodo(objectId)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		c.Logger().Error(err.Error())
+		return err
 	}
 
-	return c.JSON(http.StatusOK, updatedTodo)
+	if err := c.Bind(todo); err != nil {
+		c.Logger().Error(err.Error())
+		return echo.ErrInternalServerError
+	}
+
+	updateData := entity.UpdateTodoParam{
+		Task:      todo.Task,
+		Completed: todo.Completed,
+	}
+
+	if err := c.Validate(todo); err != nil {
+		c.Logger().Error(err.Error())
+		return err
+	}
+
+	isUpdated, err := ctrl.services.TodoUsecase.UpdateTodo(objectId, updateData)
+	if err != nil {
+		c.Logger().Error(err.Error())
+		return err
+	}
+
+	if !isUpdated {
+		return echo.ErrInternalServerError
+	}
+
+	payload := echo.Map{
+		"message": http.StatusText(http.StatusOK),
+		"data":    todo,
+	}
+	return c.JSON(http.StatusOK, payload)
 }
 
 func (ctrl TodoController) DeleteTodo(c echo.Context) error {
 	id := c.Param("id")
 	objectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
+		c.Logger().Error(err.Error())
 		payload := echo.Map{"message": "Invalid ID"}
 		return c.JSON(http.StatusBadRequest, payload)
 	}
 
-	isDeleted, err := ctrl.services.TodoService.DeleteTodo(objectId)
+	isDeleted, err := ctrl.services.TodoUsecase.DeleteTodo(objectId)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		c.Logger().Error(err.Error())
+		return err
 	}
 
 	if !isDeleted {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		return echo.ErrInternalServerError
 	}
 
 	return c.NoContent(http.StatusNoContent)

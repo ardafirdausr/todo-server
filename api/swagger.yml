@@ -1,0 +1,262 @@
+openapi: 3.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/ardafirdausr/Todo/1.0.0
+info:
+  description: Documentation of simple todo API
+  version: "1.0.0"
+  title: Simple TODO APP
+  contact:
+    email: ardafirdausr@gmail.com
+  license:
+    name: MIT
+    url: 'https://opensource.org/licenses/MIT'
+tags:
+  - name: Auth
+    description: Operations for user authentication
+  - name: Todo
+    description: Operations for todo
+paths:
+  /auth/login:
+    get:
+      tags:
+        - Auth
+      summary: Login using SSO
+      operationId: SSO
+      responses:
+        '200':
+          $ref: '#/components/responses/UserLogged'
+        '400':
+          $ref: '#/components/responses/ErrorBadRequest'
+  /todos:
+    get:
+      tags:
+        - Todo
+      summary: Get all todos
+      operationId: getAllTodos
+      description: |
+        Only accessable by logged user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/TodoList'
+    post:
+      tags:
+        - Todo
+      summary: Create new todo
+      description: |
+        Only accessable by logged user
+      operationId: createTodo
+      security:
+        - bearerAuth: []
+      requestBody:
+        $ref: '#/components/requestBodies/CreateTodo'
+      responses:
+        '200':
+          $ref: '#/components/responses/Todo'
+        '400':
+          $ref: '#/components/responses/ErrorBadRequest'
+        '500':
+          $ref: '#/components/responses/ErrorInternalServer'
+  /todos/{todoId}:
+    put:
+      tags:
+        - Todo
+      summary: Update a todo
+      description: |
+        Only accessable by logged user
+      operationId: updateTodo
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: todoId
+          in: path
+          description: The ID of todo to be delete.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateTodo'
+      responses:
+        '200':
+          $ref: '#/components/responses/Todo'
+        '404':
+          $ref: '#/components/responses/ErrorNotFound'
+        '500':
+          $ref: '#/components/responses/ErrorInternalServer'
+    delete:
+      tags:
+        - Todo
+      summary: Delete a todo
+      description: |
+        Only accessable by logged user
+      operationId: deleteTodo
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: todoId
+          in: path
+          description: The ID of todo to be delete.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'No Content'
+        '404':
+          $ref: '#/components/responses/ErrorNotFound'
+        '500':
+          $ref: '#/components/responses/ErrorInternalServer'
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '60bdc80cc7eac2565ad06c5a'
+        name:
+          type: string
+          example: 'John Doe'
+        email:
+          type: string
+          example: 'user@mail.com'
+        image_url:
+          type: string
+          example: 'https://image.com/john-doe.jpg'
+    Todo:
+      properties:
+        id:
+          type: string
+          example: '142bdc80cc7asjd21ad06c6j'
+        task:
+          type: string
+          example: 'Buy Milk'
+        completed:
+          type: boolean
+          example: true
+  requestBodies:
+    Login:
+      description: User SSO payload
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - task
+            properties:
+              task:
+                type: string
+                minLength: 0
+                maxLength: 50
+    CreateTodo:
+      description: new todo data
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - task
+            properties:
+              task:
+                type: string
+                minLength: 0
+                maxLength: 50
+    UpdateTodo:
+      description: new todo data
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              task:
+                type: string
+                minLength: 0
+                maxLength: 50
+              completed:
+                type: boolean
+  responses:
+    ErrorBadRequest:
+      description: Bad request data.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: 'Data not found'
+    ErrorUnauthorized:
+      description: The Request is unautorized.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: 'Data not found'
+    ErrorNotFound:
+      description: Entity not found.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: 'Data not found'
+    ErrorInternalServer:
+      description: Internal Error.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: 'Internal server error'
+    UserLogged:
+      description: User crendential and information
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              data:
+                $ref: '#/components/schemas/User'
+              token:
+                type: string
+    TodoList:
+      description: List of todos
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Todo'
+    Todo:
+      description: The todo
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              data:
+                $ref: '#/components/schemas/Todo'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -24,7 +24,13 @@ func New() *echo.Echo {
 	e.Debug = isDebuging
 	e.Server.ReadTimeout = 30 * time.Second
 	e.Server.WriteTimeout = 30 * time.Second
-	e.Validator = &CustomValidator{validator: validator.New()}
+
+	validator := &CustomValidator{validator: validator.New()}
+	e.Validator = validator
+
+	errorHandler := &CustomHTTPErrorHandler{debug: isDebuging, logger: e.Logger}
+	e.HTTPErrorHandler = errorHandler.Handler
+
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(echoMiddleware.Secure())
@@ -33,12 +39,13 @@ func New() *echo.Echo {
 }
 
 func Start(e *echo.Echo) {
+	host := os.Getenv("HOST")
 	port := os.Getenv("PORT")
 
 	// Start server
 	go func() {
 		e.Logger.Info("Starting server...")
-		if err := e.Start(":" + port); err != nil {
+		if err := e.Start(host + ":" + port); err != nil {
 			e.Logger.Info("Shutting down the server. error: ", err)
 		}
 	}()

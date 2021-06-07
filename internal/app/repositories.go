@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -32,12 +31,8 @@ func NewRepositories() (*Repositories, error) {
 }
 
 func connectToMongoDB() (*mongo.Database, error) {
-	host := os.Getenv("MONGO_DB_HOST")
-	port := os.Getenv("MONGO_DB_PORT")
-	dbname := os.Getenv("MONGO_DB_NAME")
-	username := os.Getenv("MONGO_DB_USERNAME")
-	password := os.Getenv("MONGO_DB_PASSWORD")
-	mongoDBURI := fmt.Sprintf("mongodb://%s:%s@%s:%s/?authSource=%s", username, password, host, port, dbname)
+	mongoDBURI := os.Getenv("MONGO_DB_URI")
+	DBName := os.Getenv("MONGO_DB_NAME")
 
 	clientOptions := options.Client().ApplyURI(mongoDBURI)
 	client, err := mongo.NewClient(clientOptions)
@@ -57,5 +52,5 @@ func connectToMongoDB() (*mongo.Database, error) {
 		return nil, err
 	}
 
-	return client.Database(dbname), nil
+	return client.Database(DBName), nil
 }

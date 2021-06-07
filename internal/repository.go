@@ -6,9 +6,10 @@ import (
 )
 
 type TodoRepository interface {
-	GetTodosByUserID(primitive.ObjectID) ([]entity.Todo, error)
+	GetTodosByUserID(primitive.ObjectID) ([]*entity.Todo, error)
+	GetTodoByID(primitive.ObjectID) (*entity.Todo, error)
 	Create(entity.CreateTodoParam) (*entity.Todo, error)
-	UpdateById(primitive.ObjectID, entity.UpdateTodoParam) (*entity.Todo, error)
+	UpdateById(primitive.ObjectID, entity.UpdateTodoParam) (bool, error)
 	DeleteById(primitive.ObjectID) (bool, error)
 }
 

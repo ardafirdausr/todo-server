@@ -10,12 +10,12 @@ type Todo struct {
 }
 
 type CreateTodoParam struct {
-	Task      string             `json:"task" bson:"task" validate:"required"`
-	Completed bool               `json:"completed" bson:"completed" validate:"required"`
-	UserID    primitive.ObjectID `json:"userId" bson:"userId,omitempty" validate:"required"`
+	Task      string             `json:"task" bson:"task" validate:"required,min=1,max=50"`
+	Completed bool               `json:"completed" bson:"completed"`
+	UserID    primitive.ObjectID `bson:"userId,omitempty"`
 }
 
 type UpdateTodoParam struct {
-	Task      string `json:"task" bson:"task"`
-	Completed bool   `json:"completed" bson:"completed"`
+	Task      string `json:"task,omitempty" bson:"task" validate:"min=1,max=50"`
+	Completed bool   `json:"completed,omitempty" bson:"completed"`
 }
