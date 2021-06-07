@@ -39,12 +39,13 @@ func New() *echo.Echo {
 }
 
 func Start(e *echo.Echo) {
+	host := os.Getenv("HOST")
 	port := os.Getenv("PORT")
 
 	// Start server
 	go func() {
 		e.Logger.Info("Starting server...")
-		if err := e.Start("127.0.0.1:" + port); err != nil {
+		if err := e.Start(host + ":" + port); err != nil {
 			e.Logger.Info("Shutting down the server. error: ", err)
 		}
 	}()

@@ -9,6 +9,4 @@ RUN go get -d -v ./...
 RUN go install -v ./...
 RUN go build -o /go/bin/todo cmd/todo/*.go
 
-EXPOSE 8080
-
 ENTRYPOINT ["/go/bin/todo"]
