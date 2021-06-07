@@ -40,10 +40,18 @@ func (ctrl TodoController) CreateTodo(c echo.Context) error {
 	claims := user.Claims.(*entity.JWTPayload)
 	userId := claims.ID
 
-	todo := entity.CreateTodoParam{UserID: userId}
+	todo := entity.CreateTodoParam{
+		UserID:    userId,
+		Completed: false,
+	}
 	if err := c.Bind(&todo); err != nil {
 		c.Logger().Error(err.Error())
 		return echo.ErrInternalServerError
+	}
+
+	if err := c.Validate(&todo); err != nil {
+		c.Logger().Error(err.Error())
+		return err
 	}
 
 	newTodo, err := ctrl.services.TodoUsecase.CreateTodo(todo)
@@ -74,7 +82,7 @@ func (ctrl TodoController) UpdateTodo(c echo.Context) error {
 		return err
 	}
 
-	if err := c.Bind(&todo); err != nil {
+	if err := c.Bind(todo); err != nil {
 		c.Logger().Error(err.Error())
 		return echo.ErrInternalServerError
 	}
@@ -82,6 +90,11 @@ func (ctrl TodoController) UpdateTodo(c echo.Context) error {
 	updateData := entity.UpdateTodoParam{
 		Task:      todo.Task,
 		Completed: todo.Completed,
+	}
+
+	if err := c.Validate(todo); err != nil {
+		c.Logger().Error(err.Error())
+		return err
 	}
 
 	isUpdated, err := ctrl.services.TodoUsecase.UpdateTodo(objectId, updateData)

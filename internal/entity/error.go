@@ -15,7 +15,11 @@ func NewErrValidation(message string, errors []map[string]string, err error) *Er
 }
 
 func (ve ErrValidation) Error() string {
-	return ve.Err.Error()
+	if ve.Err != nil {
+		return ve.Err.Error()
+	}
+
+	return ve.Message
 }
 
 type ErrNotFound struct {
@@ -31,5 +35,9 @@ func NewErrNotFound(message string, err error) *ErrNotFound {
 }
 
 func (ent ErrNotFound) Error() string {
-	return ent.Err.Error()
+	if ent.Err != nil {
+		return ent.Err.Error()
+	}
+
+	return ent.Message
 }

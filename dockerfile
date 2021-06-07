@@ -1,4 +1,4 @@
-FROM go:1.16
+FROM golang:1.16
 
 LABEL version="1.0.0"
 
@@ -8,5 +8,7 @@ COPY . .
 RUN go get -d -v ./...
 RUN go install -v ./...
 RUN go build -o /go/bin/todo cmd/todo/*.go
+
+EXPOSE 8080
 
 ENTRYPOINT ["/go/bin/todo"]
