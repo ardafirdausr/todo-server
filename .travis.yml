@@ -17,6 +17,7 @@ before_deploy:
 - echo MONGO_DB_NAME=$MONGO_DB_NAME >> .env
 - echo JWT_SECRET_KEY=$JWT_SECRET_KEY >> .env
 - echo GOOGLE_OAUTH_CLIENT_ID=$GOOGLE_OAUTH_CLIENT_ID >> .env
+- echo SENTRY_DSN=$SENTRY_DSN >> .env
 
 deploy:
   provider: heroku
