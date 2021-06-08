@@ -16,7 +16,6 @@ import (
 
 // New instantates new Echo server
 func New() *echo.Echo {
-
 	debug := os.Getenv("DEBUG")
 	isDebuging, _ := strconv.ParseBool(debug)
 
@@ -28,6 +27,9 @@ func New() *echo.Echo {
 	validator := &CustomValidator{validator: validator.New()}
 	e.Validator = validator
 
+	SentryDsn := os.Getenv("SENTRY_DSN")
+	sentryMiddleware := middleware.Sentry(SentryDsn)
+	e.Use(sentryMiddleware)
 	errorHandler := &CustomHTTPErrorHandler{debug: isDebuging, logger: e.Logger}
 	e.HTTPErrorHandler = errorHandler.Handler
 

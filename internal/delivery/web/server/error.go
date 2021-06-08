@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/ardafirdausr/todo-server/internal/entity"
+	"github.com/getsentry/sentry-go"
+	sentryecho "github.com/getsentry/sentry-go/echo"
 	"github.com/labstack/echo/v4"
 )
 
@@ -47,7 +49,14 @@ func (che CustomHTTPErrorHandler) Handler(err error, c echo.Context) {
 		}
 	}
 
-	// Send response
+	if hub := sentryecho.GetHubFromContext(c); hub != nil {
+		if he.Code == http.StatusInternalServerError {
+			hub.WithScope(func(scope *sentry.Scope) {
+				hub.CaptureMessage(err.Error())
+			})
+		}
+	}
+
 	if !c.Response().Committed {
 		if c.Request().Method == http.MethodHead {
 			err = c.NoContent(he.Code)
