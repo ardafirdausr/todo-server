@@ -18,7 +18,7 @@ func New() (*TodoApp, error) {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("Failed to load .env  file \n%v", err)
+		log.Printf("Warning! The .env file is not found. Make sure all env variables are declared \n%v", err)
 	}
 
 	app.Repositories, err = NewRepositories()
