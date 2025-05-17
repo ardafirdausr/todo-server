@@ -1,12 +1,22 @@
-FROM golang:1.16
+### BUILD STAGE ###
+FROM golang:1.20.14-alpine3.18 AS builder
 
-LABEL version="1.0.0"
+LABEL maintainer="Arda <ardafirdausr@gmail.com>"
 
-WORKDIR /go/src/github.com/ardafirdausr/todo
+WORKDIR /app
+
 COPY . .
-
-RUN go get -d -v ./...
 RUN go install -v ./...
-RUN go build -o /go/bin/todo cmd/todo/*.go
+RUN go build -o /app cmd/todo/*.go
 
-ENTRYPOINT ["/go/bin/todo"]
+### RUN STAGE ###
+FROM alpine:3.18
+
+RUN apk add --no-cache tzdata
+ENV TZ=Asia/Jakarta
+
+WORKDIR /app
+
+COPY --from=builder /app/main .
+
+CMD ["./main"]

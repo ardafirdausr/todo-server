@@ -21,6 +21,7 @@ func NewTodoRepository(DB *mongo.Database) *TodoRepository {
 
 func (repo TodoRepository) GetTodosByUserID(ID primitive.ObjectID) ([]*entity.Todo, error) {
 	ctx := context.TODO()
+
 	csr, err := repo.DB.Collection("todos").Find(ctx, bson.M{"userId": ID})
 	if err != nil {
 		log.Println(err.Error())
